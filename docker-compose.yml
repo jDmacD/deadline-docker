@@ -86,7 +86,6 @@ services:
     networks:
       - net
     environment: *default-environment
-
     volumes:
       - type: volume
         source: repo
@@ -95,7 +94,6 @@ services:
     command: ./run.sh deadlinercs.exe
 
   web:
-    privileged: true
     build:
       context: client
     image: deadline-client
@@ -115,9 +113,30 @@ services:
           mode: host
     networks:
       - net
+    volumes:
+      - type: volume
+        source: repo
+        target: /repo
     environment: *default-environment
     restart: on-failure
     command: ./run.sh deadlinewebservice.exe
+
+  worker:
+    build:
+      context: client
+    image: deadline-client
+    depends_on:
+      - db
+      - repository
+    networks:
+      - net
+    volumes:
+      - type: volume
+        source: repo
+        target: /repo
+    environment: *default-environment
+    restart: on-failure
+    command: ./run.sh deadlineslave.exe -nogui
 
 networks:
   net:
