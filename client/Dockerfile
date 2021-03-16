@@ -8,7 +8,7 @@ RUN chmod u+x DeadlineClient-installer.run && \
 	--mode unattended
 
 FROM ubuntu:focal
-
+# RUN apt-get update -y && apt-get install curl -y
 COPY --from=0 /opt/Thinkbox /opt/Thinkbox
 COPY run.sh .
 
