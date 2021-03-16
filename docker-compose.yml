@@ -1,0 +1,126 @@
+version: "3.9"
+
+services:
+  db:
+    image: mongo:3.6.21
+    ports:
+        - target: 27017
+          published: 27017
+          protocol: tcp
+          mode: host
+    networks:
+      - net
+    volumes:
+      - type: volume
+        source: db
+        target: /data/db
+  
+  repository:
+    build:
+      context: repository
+    image: deadline-repository
+    depends_on:
+      - db
+    networks:
+      - net
+    environment:
+      dl_prefix: "/repo"
+      dl_mode: "unattended"
+      dl_debuglevel: "4"
+      dl_setpermissions: "true"
+      dl_installmongodb: "false"
+      dl_requireSSL: "false"
+      dl_dbssl: "false"
+      dl_dbhost: "db"
+      dl_dbport: "27017"
+      dl_dbname: "deadline10db"
+      dl_dbauth: "false"
+    volumes:
+      - type: volume
+        source: repo
+        target: /repo
+    restart: on-failure
+
+  rcs:
+    build:
+      context: client
+    image: deadline-client
+    depends_on:
+      - db
+      - repository
+    ports:
+        - target: 8080
+          published: 8080
+          protocol: tcp
+          mode: host
+    networks:
+      - net
+    environment:
+      dl_LicenseMode: "Free"
+      dl_LicenseServer: ""
+      dl_Region: ""
+      dl_LauncherListeningPort: "17000"
+      dl_LauncherServiceStartupDelay: "60"
+      dl_AutoConfigurationPort: "17001"
+      dl_SlaveStartupPort: "17003"
+      dl_SlaveDataRoot: ""
+      dl_RestartStalledSlave: "false"
+      dl_NoGuiMode: "true"
+      dl_LaunchSlaveAtStartup: "false"
+      dl_AutoUpdateOverride: ""
+      dl_ConnectionType: "Repository"
+      dl_NetworkRoot: "/repo"
+      dl_DbSSLCertificate: ""
+    volumes:
+      - type: volume
+        source: repo
+        target: /repo
+    restart: on-failure
+    command: ./run.sh deadlinercs.exe
+
+  web:
+    build:
+      context: client
+    image: deadline-client
+    depends_on:
+      - db
+      - repository
+    ports:
+        - target: 8085
+          published: 8085
+          protocol: tcp
+          mode: host
+    networks:
+      - net
+    environment:
+      dl_LicenseMode: "Free"
+      dl_LicenseServer: ""
+      dl_Region: ""
+      dl_LauncherListeningPort: "17000"
+      dl_LauncherServiceStartupDelay: "60"
+      dl_AutoConfigurationPort: "17001"
+      dl_SlaveStartupPort: "17003"
+      dl_SlaveDataRoot: ""
+      dl_RestartStalledSlave: "false"
+      dl_NoGuiMode: "true"
+      dl_LaunchSlaveAtStartup: "false"
+      dl_AutoUpdateOverride: ""
+      dl_ConnectionType: "Repository"
+      dl_NetworkRoot: "/repo"
+      dl_DbSSLCertificate: ""
+    volumes:
+      - type: volume
+        source: repo
+        target: /repo
+    restart: on-failure
+    command: ./run.sh deadlinewebservice.exe
+
+networks:
+  net:
+    internal: false
+    driver: bridge
+    attachable: true
+
+volumes:
+  repo:
+  db:
