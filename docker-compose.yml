@@ -1,4 +1,22 @@
-version: "3.9"
+version: "3.3"
+
+x-client-config:
+  &default-environment
+  dl_LicenseMode: "LicenseFree"
+  dl_LicenseServer: ""
+  dl_Region: ""
+  dl_LauncherListeningPort: "17000"
+  dl_LauncherServiceStartupDelay: "60"
+  dl_AutoConfigurationPort: "17001"
+  dl_SlaveStartupPort: "17003"
+  dl_SlaveDataRoot: ""
+  dl_RestartStalledSlave: "false"
+  dl_NoGuiMode: "true"
+  dl_LaunchSlaveAtStartup: "false"
+  dl_AutoUpdateOverride: ""
+  dl_ConnectionType: "Repository"
+  dl_NetworkRoot: "/repo"
+  dl_DbSSLCertificate: ""
 
 services:
   db:
@@ -21,6 +39,12 @@ services:
     image: deadline-repository
     depends_on:
       - db
+    healthcheck:
+      test: ["CMD", "stat", "/repo/settings/repository.ini"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 1m
     networks:
       - net
     environment:
@@ -48,6 +72,12 @@ services:
     depends_on:
       - db
       - repository
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 1m
     ports:
         - target: 8080
           published: 8080
@@ -55,22 +85,8 @@ services:
           mode: host
     networks:
       - net
-    environment:
-      dl_LicenseMode: "Free"
-      dl_LicenseServer: ""
-      dl_Region: ""
-      dl_LauncherListeningPort: "17000"
-      dl_LauncherServiceStartupDelay: "60"
-      dl_AutoConfigurationPort: "17001"
-      dl_SlaveStartupPort: "17003"
-      dl_SlaveDataRoot: ""
-      dl_RestartStalledSlave: "false"
-      dl_NoGuiMode: "true"
-      dl_LaunchSlaveAtStartup: "false"
-      dl_AutoUpdateOverride: ""
-      dl_ConnectionType: "Repository"
-      dl_NetworkRoot: "/repo"
-      dl_DbSSLCertificate: ""
+    environment: *default-environment
+
     volumes:
       - type: volume
         source: repo
@@ -79,41 +95,30 @@ services:
     command: ./run.sh deadlinercs.exe
 
   web:
+    privileged: true
     build:
       context: client
     image: deadline-client
     depends_on:
       - db
       - repository
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 1m
     ports:
-        - target: 8085
-          published: 8085
+        - target: 8082
+          published: 8082
           protocol: tcp
           mode: host
     networks:
       - net
-    environment:
-      dl_LicenseMode: "Free"
-      dl_LicenseServer: ""
-      dl_Region: ""
-      dl_LauncherListeningPort: "17000"
-      dl_LauncherServiceStartupDelay: "60"
-      dl_AutoConfigurationPort: "17001"
-      dl_SlaveStartupPort: "17003"
-      dl_SlaveDataRoot: ""
-      dl_RestartStalledSlave: "false"
-      dl_NoGuiMode: "true"
-      dl_LaunchSlaveAtStartup: "false"
-      dl_AutoUpdateOverride: ""
-      dl_ConnectionType: "Repository"
-      dl_NetworkRoot: "/repo"
-      dl_DbSSLCertificate: ""
-    volumes:
-      - type: volume
-        source: repo
-        target: /repo
+    environment: *default-environment
     restart: on-failure
-    command: ./run.sh deadlinewebservice.exe
+    command: tail -f /dev/null
+    # command: ./run.sh deadlinewebservice.exe
 
 networks:
   net:
