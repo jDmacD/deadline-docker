@@ -103,10 +103,30 @@ AutoUpdateOverride=
 ConnectionType=Repository
 NetworkRoot=/repo
 DbSSLCertificate=
-NetworkRoot0=/repo
 
 ```
 
-Becomes: 
+Becomes:
+
+```yml
+
+    environment:
+      dl_LicenseMode: "Free"
+      dl_LicenseServer: ""
+      dl_Region: ""
+      dl_LauncherListeningPort: "17000"
+      dl_LauncherServiceStartupDelay: "60"
+      dl_AutoConfigurationPort: "17001"
+      dl_SlaveStartupPort: "17003"
+      dl_SlaveDataRoot: ""
+      dl_RestartStalledSlave: "false"
+      dl_NoGuiMode: "true"
+      dl_LaunchSlaveAtStartup: "false"
+      dl_AutoUpdateOverride: ""
+      dl_ConnectionType: "Repository"
+      dl_NetworkRoot: "/repo"
+      dl_DbSSLCertificate: ""
+
+```
 
 
