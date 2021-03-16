@@ -117,8 +117,7 @@ services:
       - net
     environment: *default-environment
     restart: on-failure
-    command: tail -f /dev/null
-    # command: ./run.sh deadlinewebservice.exe
+    command: ./run.sh deadlinewebservice.exe
 
 networks:
   net:
