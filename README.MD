@@ -25,7 +25,7 @@ The whole stack can be spun up with:
 docker-compose up -d
 ```
 
-Once the database is up and the repository is installed, the RCS will be available on port `8080` and the webservice will be available on port `8085`.
+Once the database is up and the repository is installed, the RCS will be available on port `8080` and the webservice will be available on port `8082`. These are the default ports in both cases.
 
 The repository container will exit successully when the installer finishes. At that point its job is done.
 
@@ -81,6 +81,8 @@ Is expressed as:
 
 ```
 
+The repository installer script will check for the existance of  `/repo/settings/repository.ini`. If it exists, it will **skip the installation**. Delete this file, or blow away the volume, if you want a clean build.
+
 ### Client
 
 On Linux, the Deadline clients pull their configuration from `/var/lib/Thinkbox/Deadline10/deadline.ini`, this is normally configured when the client is installed. The Dockerfile provided only installs the binaries and the `deadline.ini` file is created when the container starts. As with the repository, prefix the configuration option with `dl_`.
@@ -128,5 +130,3 @@ Becomes:
       dl_DbSSLCertificate: ""
 
 ```
-
-
